@@ -6,20 +6,13 @@ export interface GangZone {
   minY: number;
   maxX: number;
   maxY: number;
-  color: string; // Hex format #RRGGBB or #RRGGBBAA
+  color: string; // Hex format #RRGGBB
   alpha: number; // 0 to 255 (SA-MP transparency)
-  flashColor?: string;
-  flashAlpha?: number;
-  flashing: boolean;
   visible: boolean;
   locked: boolean;
-  notes?: string;
-  gangPreset?: string;
 }
 
 export type ToolMode = 'select' | 'draw-box' | 'pan' | 'measure';
-
-export type MapStyle = 'radar' | 'satellite' | 'blueprint' | 'vector';
 
 export interface Viewport {
   zoom: number; // 0.1 to 10
@@ -44,17 +37,6 @@ export interface Landmark {
   x: number;
   y: number;
   iconType: 'casino' | 'airport' | 'gang' | 'mountain' | 'police' | 'landmark';
-}
-
-export interface GangPreset {
-  id: string;
-  name: string;
-  shortName: string;
-  city: 'Los Santos' | 'San Fierro' | 'Las Venturas' | 'San Andreas';
-  hexColor: string;
-  alpha: number; // default SA-MP alpha (e.g. 150/255 ~ 0x96)
-  flashColor: string;
-  tag: string;
 }
 
 export type ExportFormat = 'pawn-simple' | 'pawn-array' | 'pawn-system' | 'mta-lua' | 'json' | 'csv';

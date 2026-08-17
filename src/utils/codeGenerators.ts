@@ -15,16 +15,13 @@ export function generatePawnSimple(zones: GangZone[]): string {
   const showLines = zones
     .map(
       z =>
-        `    GangZoneShowForPlayer(playerid, ${z.variableName}, ${toSampHex(z.color, z.alpha)});` +
-        (z.flashColor
-          ? `\n    // GangZoneFlashForPlayer(playerid, ${z.variableName}, ${toSampHex(z.flashColor, z.flashAlpha || 255)});`
-          : '')
+        `    GangZoneShowForPlayer(playerid, ${z.variableName}, ${toSampHex(z.color, z.alpha)});`
     )
     .join('\n');
 
   return `/*
  * =========================================================================
- *   GTA SA Gang Zones - Criado com GTA SA GangZone Creator
+ *   GTA SA Gang Zones - Criado com GangZone Creator
  *   Total de Zonas: ${zones.length}
  * =========================================================================
  */
@@ -63,7 +60,7 @@ export function generatePawnArray(zones: GangZone[]): string {
   const rows = zones
     .map(
       (z, idx) =>
-        `    {"${z.name.replace(/"/g, '')}", ${formatFloat(z.minX)}, ${formatFloat(z.minY)}, ${formatFloat(z.maxX)}, ${formatFloat(z.maxY)}, ${toSampHex(z.color, z.alpha)}, ${toSampHex(z.flashColor || z.color, z.flashAlpha || 255)}}` +
+        `    {"${z.name.replace(/"/g, '')}", ${formatFloat(z.minX)}, ${formatFloat(z.minY)}, ${formatFloat(z.maxX)}, ${formatFloat(z.maxY)}, ${toSampHex(z.color, z.alpha)}}` +
         (idx < zones.length - 1 ? ',' : '')
     )
     .join('\n');
@@ -86,7 +83,6 @@ enum E_GANG_ZONE_DATA {
     Float:E_GZ_MAX_X,
     Float:E_GZ_MAX_Y,
     E_GZ_COLOR,
-    E_GZ_FLASH_COLOR,
     E_GZ_ZONE_ID
 };
 
@@ -203,7 +199,6 @@ export function generateJson(zones: GangZone[]): string {
     {
       version: '1.0',
       exportedAt: new Date().toISOString(),
-      map: 'GTA: San Andreas',
       totalZones: zones.length,
       zones: zones,
     },
@@ -213,11 +208,11 @@ export function generateJson(zones: GangZone[]): string {
 }
 
 export function generateCsv(zones: GangZone[]): string {
-  const header = 'id,name,variableName,minX,minY,maxX,maxY,colorHex,alpha,sampHex,notes\n';
+  const header = 'id,name,variableName,minX,minY,maxX,maxY,colorHex,alpha,sampHex\n';
   const rows = zones
     .map(
       z =>
-        `"${z.id}","${z.name.replace(/"/g, '""')}","${z.variableName}",${z.minX},${z.minY},${z.maxX},${z.maxY},"${z.color}",${z.alpha},"${toSampHex(z.color, z.alpha)}","${(z.notes || '').replace(/"/g, '""')}"`
+        `"${z.id}","${z.name.replace(/"/g, '""')}","${z.variableName}",${z.minX},${z.minY},${z.maxX},${z.maxY},"${z.color}",${z.alpha},"${toSampHex(z.color, z.alpha)}"`
     )
     .join('\n');
   return header + rows;
@@ -248,8 +243,6 @@ export function exportCode(format: ExportFormat, zones: GangZone[]): string {
 export function parsePawnCode(code: string): GangZone[] {
   const result: GangZone[] = [];
   
-  // Match GangZoneCreate(minX, minY, maxX, maxY)
-  // Optional variable assignment: (new\s+)?([a-zA-Z0-9_]+)\s*=\s*GangZoneCreate\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*,\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)
   const regexWithVar = /(?:new\s+)?([a-zA-Z0-9_]+)\s*=\s*GangZoneCreate\s*\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*,\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/g;
   let match: RegExpExecArray | null;
 
@@ -264,7 +257,6 @@ export function parsePawnCode(code: string): GangZone[] {
 
     foundVars.add(varName);
 
-    // Try finding associated color in GangZoneShowForPlayer/All
     let hexColor = '#00AA00';
     let alpha = 170;
     
@@ -290,14 +282,11 @@ export function parsePawnCode(code: string): GangZone[] {
       maxY: Math.max(minY, maxY),
       color: hexColor,
       alpha: alpha,
-      flashing: false,
       visible: true,
       locked: false,
-      notes: 'Importado de código Pawn',
     });
   }
 
-  // If no variable assigned GangZoneCreate found, match standalone GangZoneCreate(...)
   if (result.length === 0) {
     const standaloneRegex = /GangZoneCreate\s*\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*,\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/g;
     let sMatch: RegExpExecArray | null;
@@ -318,10 +307,8 @@ export function parsePawnCode(code: string): GangZone[] {
         maxY: Math.max(minY, maxY),
         color: '#990099',
         alpha: 170,
-        flashing: false,
         visible: true,
         locked: false,
-        notes: 'Importado de GangZoneCreate',
       });
       count++;
     }

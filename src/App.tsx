@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { GangZone, ToolMode, MapStyle, Viewport } from './types';
-import { DEFAULT_INITIAL_ZONES, GANG_PRESETS } from './data/gtasa_data';
+import React, { useState, useEffect, useCallback } from 'react';
+import { GangZone, ToolMode, Viewport } from './types';
+import { DEFAULT_INITIAL_ZONES } from './data/gtasa_data';
 import { Header } from './components/Header';
 import { Toolbar } from './components/Toolbar';
 import { MapCanvas } from './components/MapCanvas';
@@ -10,10 +10,10 @@ import { ImportModal } from './components/ImportModal';
 import { TurfGridGeneratorModal } from './components/TurfGridGeneratorModal';
 import { QuickHelpModal } from './components/QuickHelpModal';
 
-const STORAGE_KEY = 'gtasa_gangzones_data_v2';
+const STORAGE_KEY = 'gtasa_gangzones_data_v3';
 
 export default function App() {
-  // Load initial zones from localStorage or default Grove/Ballas/Vagos presets
+  // Load initial zones from localStorage or defaults
   const [zones, setZones] = useState<GangZone[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -35,10 +35,8 @@ export default function App() {
   const [showGrid, setShowGrid] = useState<boolean>(true);
   const [showLabels, setShowLabels] = useState<boolean>(true);
   const [showLandmarks, setShowLandmarks] = useState<boolean>(true);
-  const [flashPreview, setFlashPreview] = useState<boolean>(true);
-  const [mapStyle, setMapStyle] = useState<MapStyle>('radar');
   
-  // Default viewport centered on Los Santos (Ganton / Grove Street)
+  // Default viewport centered on Los Santos (Ganton)
   const [viewport, setViewport] = useState<Viewport>({
     zoom: 0.95,
     centerX: 2200,
@@ -59,19 +57,6 @@ export default function App() {
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isTurfGridOpen, setIsTurfGridOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
-
-  // Flash ticker for blinking preview
-  const [flashTick, setFlashTick] = useState(false);
-  useEffect(() => {
-    if (!flashPreview) {
-      setFlashTick(false);
-      return;
-    }
-    const interval = setInterval(() => {
-      setFlashTick(prev => !prev);
-    }, 450);
-    return () => clearInterval(interval);
-  }, [flashPreview]);
 
   // Save to localStorage on changes
   useEffect(() => {
@@ -119,8 +104,6 @@ export default function App() {
   // Zone CRUD operations
   const handleCreateZone = (newZoneProps: Partial<GangZone>) => {
     const nextIndex = zones.length + 1;
-    const defaultPreset = GANG_PRESETS[0]; // Grove Street
-
     const defaultMinX = Math.round(viewport.centerX - 150);
     const defaultMaxX = Math.round(viewport.centerX + 150);
     const defaultMinY = Math.round(viewport.centerY - 100);
@@ -134,14 +117,10 @@ export default function App() {
       minY: newZoneProps.minY ?? defaultMinY,
       maxX: newZoneProps.maxX ?? defaultMaxX,
       maxY: newZoneProps.maxY ?? defaultMaxY,
-      color: newZoneProps.color || defaultPreset.hexColor,
-      alpha: newZoneProps.alpha || defaultPreset.alpha,
-      flashColor: newZoneProps.flashColor || defaultPreset.flashColor,
-      flashing: false,
+      color: newZoneProps.color || '#00AA00',
+      alpha: newZoneProps.alpha || 170,
       visible: true,
       locked: false,
-      gangPreset: defaultPreset.id,
-      notes: newZoneProps.notes || '',
     };
 
     pushHistory([...zones, newZone]);
@@ -179,14 +158,14 @@ export default function App() {
   };
 
   const handleClearAll = () => {
-    if (window.confirm('Tem certeza de que deseja limpar todas as zonas de gangue?')) {
+    if (window.confirm('Deseja limpar todas as zonas?')) {
       pushHistory([]);
       setSelectedZoneId(null);
     }
   };
 
   const handleResetDefaults = () => {
-    if (window.confirm('Restaurar as zonas clássicas de Los Santos (Ganton, Idlewood, East LS, etc.)?')) {
+    if (window.confirm('Restaurar as zonas clássicas?')) {
       pushHistory(DEFAULT_INITIAL_ZONES);
       setSelectedZoneId(DEFAULT_INITIAL_ZONES[0].id);
       setViewport({ zoom: 0.95, centerX: 2200, centerY: -1600 });
@@ -197,7 +176,6 @@ export default function App() {
     pushHistory([...zones, ...imported]);
     if (imported.length > 0) {
       setSelectedZoneId(imported[0].id);
-      // Focus on first imported zone
       const first = imported[0];
       setViewport({
         zoom: 0.8,
@@ -235,18 +213,9 @@ export default function App() {
     });
   };
 
-  const handleSelectCity = (x: number, y: number, zoom: number) => {
-    setViewport({
-      centerX: x,
-      centerY: y,
-      zoom: zoom,
-    });
-  };
-
-  // Global Keyboard Shortcuts
+  // Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore when typing inside input / textarea
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
         return;
@@ -296,7 +265,7 @@ export default function App() {
   const selectedZone = zones.find(z => z.id === selectedZoneId);
 
   return (
-    <div id="gtasa-app-root" className="flex flex-col h-screen w-screen bg-[#0c0c0e] text-[#e0e0e0] overflow-hidden font-sans">
+    <div id="app-root" className="flex flex-col h-screen w-screen bg-[#0e0e11] text-[#e4e4e7] overflow-hidden font-sans">
       {/* Top Header */}
       <Header
         totalZones={zones.length}
@@ -316,21 +285,13 @@ export default function App() {
         onToggleLabels={() => setShowLabels(prev => !prev)}
         showLandmarks={showLandmarks}
         onToggleLandmarks={() => setShowLandmarks(prev => !prev)}
-        flashPreview={flashPreview}
-        onToggleFlashPreview={() => setFlashPreview(prev => !prev)}
-        mapStyle={mapStyle}
-        onMapStyleChange={setMapStyle}
-        onSelectCity={handleSelectCity}
-        onNewZone={() => handleCreateZone({})}
         onOpenTurfGridModal={() => setIsTurfGridOpen(true)}
-        onOpenExportModal={() => setIsExportOpen(true)}
         onOpenImportModal={() => setIsImportOpen(true)}
         onOpenHelpModal={() => setIsHelpOpen(true)}
         canUndo={history.past.length > 0}
         canRedo={history.future.length > 0}
         onUndo={handleUndo}
         onRedo={handleRedo}
-        zoneCount={zones.length}
       />
 
       {/* Center Layout: Interactive Map + Sidebar */}
@@ -347,10 +308,8 @@ export default function App() {
             showGrid={showGrid}
             showLabels={showLabels}
             showLandmarks={showLandmarks}
-            mapStyle={mapStyle}
             viewport={viewport}
             onViewportChange={setViewport}
-            flashTick={flashTick}
           />
         </main>
 
@@ -378,6 +337,7 @@ export default function App() {
 
       {/* Import Modal */}
       <ImportModal
+        zones={zones}
         isOpen={isImportOpen}
         onClose={() => setIsImportOpen(false)}
         onImportZones={handleImportZones}
