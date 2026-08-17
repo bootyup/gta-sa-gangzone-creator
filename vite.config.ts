@@ -5,7 +5,8 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), tailwindcss()], 
+    base: '/gta-sa-gangzone-creator/',
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
