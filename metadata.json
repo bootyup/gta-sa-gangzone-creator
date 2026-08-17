@@ -1,0 +1,6 @@
+{
+  "name": "GTA SA GangZone Creator",
+  "description": "Criador interativo de Gang Zones para GTA San Andreas (SA-MP / open.mp) com mapa detalhado, ajuste visual de coordenadas e gerador de código Pawn e Lua.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
