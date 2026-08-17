@@ -46,19 +46,7 @@ function getRadarCandidates(): string[] {
 
   return [
     radarMapPngUrl,
-    radarMapJpgUrl,
-    `${cleanBase}maps/gtasa_radar.png`,
-    `${cleanBase}maps/gtasa_radar.jpg`,
-    `${cleanBase}gtasa_radar.png`,
-    `${cleanBase}gtasa_radar.jpg`,
-    '/maps/gtasa_radar.png',
-    '/maps/gtasa_radar.jpg',
-    '/gtasa_radar.png',
-    '/gtasa_radar.jpg',
-    'maps/gtasa_radar.png',
-    'maps/gtasa_radar.jpg',
-    'gtasa_radar.png',
-    'gtasa_radar.jpg',
+    // radarMapJpgUrl,
   ].filter(Boolean);
 }
 
