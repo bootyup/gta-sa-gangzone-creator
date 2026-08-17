@@ -20,7 +20,6 @@ import {
 } from 'lucide-react';
 
 import radarMapPngUrl from '../assets/maps/gtasa_radar.png';
-import radarMapJpgUrl from '../assets/maps/gtasa_radar.jpg';
 
 interface MapCanvasProps {
   zones: GangZone[];
@@ -46,7 +45,6 @@ function getRadarCandidates(): string[] {
 
   return [
     radarMapPngUrl,
-    // radarMapJpgUrl,
   ].filter(Boolean);
 }
 
